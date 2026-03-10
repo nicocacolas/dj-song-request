@@ -4,6 +4,22 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🎉 Song Request</title>
+<script>
+  (function() {
+    var THEMES = {
+      party:   { '--bg':'#1a0533','--card':'#2b0d4e','--pink':'#ff4d8d','--yellow':'#ffe94d','--purple':'#b94dff','--teal':'#4dffd6','--text':'#ffffff','--subtext':'#d4b8f0' },
+      summer:  { '--bg':'#fff8f0','--card':'#ffe8cc','--pink':'#ff6b35','--yellow':'#ffc947','--purple':'#ff8c00','--teal':'#00b894','--text':'#1a0a00','--subtext':'#7d4e24' },
+      elegant: { '--bg':'#0c0c0c','--card':'#1c1c1c','--pink':'#d4a843','--yellow':'#f0dea0','--purple':'#c09030','--teal':'#d4a843','--text':'#f5f0e8','--subtext':'#a08050' },
+      club:    { '--bg':'#03030f','--card':'#0a0a20','--pink':'#ff00cc','--yellow':'#00ffee','--purple':'#7700ff','--teal':'#00ff88','--text':'#ffffff','--subtext':'#99ffdd' },
+      ugly:    { '--bg':'#ffff00','--card':'#ff69b4','--pink':'#ff0000','--yellow':'#00ff00','--purple':'#0000ff','--teal':'#ff6600','--text':'#000080','--subtext':'#660000' }
+    };
+    var name = localStorage.getItem('cached_theme') || 'party';
+    var t = THEMES[name] || THEMES.party;
+    var root = document.documentElement;
+    Object.keys(t).forEach(function(k) { root.style.setProperty(k, t[k]); });
+    root.dataset.theme = name;
+  })();
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
   /* ===================== CONFIG ===================== */
@@ -500,7 +516,9 @@ const THEMES = {
 function applyTheme(name) {
   const t = THEMES[name] || THEMES.party;
   Object.entries(t).forEach(([k, v]) => document.documentElement.style.setProperty(k, v));
+  document.documentElement.dataset.theme = name;
   document.body.dataset.theme = name;
+  localStorage.setItem('cached_theme', name);
 }
 
 // ── Config check ──────────────────────────────────────────────────────────
