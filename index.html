@@ -354,6 +354,79 @@
   body[data-theme="ugly"] label { color: var(--purple) !important; }
   body[data-theme="ugly"] #results li { color: var(--text); background: rgba(0,0,255,0.07); }
   body[data-theme="ugly"] #selected-song { background: rgba(0,255,0,0.15); border-color: var(--purple); }
+
+  /* ---- Sending overlay ---- */
+  #sending-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 2, 25, 0.82);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.4rem;
+    z-index: 998;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .3s ease;
+  }
+  #sending-overlay.show { opacity: 1; pointer-events: all; }
+
+  .vinyl {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    background: conic-gradient(#1a0533 0deg, #3a1560 40deg, #1a0533 80deg, #3a1560 120deg, #1a0533 160deg, #3a1560 200deg, #1a0533 240deg, #3a1560 280deg, #1a0533 320deg, #3a1560 360deg);
+    box-shadow: 0 0 35px rgba(255,77,141,0.5), 0 0 70px rgba(185,77,255,0.25);
+    animation: spin-vinyl 1.2s linear infinite;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .vinyl::before {
+    content: '';
+    position: absolute;
+    width: 68%;
+    height: 68%;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255,77,141,0.35);
+  }
+  .vinyl::after {
+    content: '';
+    position: absolute;
+    width: 42%;
+    height: 42%;
+    border-radius: 50%;
+    border: 1.5px solid rgba(185,77,255,0.35);
+  }
+  .vinyl-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--pink);
+    box-shadow: 0 0 14px var(--pink), 0 0 28px rgba(255,77,141,0.5);
+    z-index: 1;
+  }
+  @keyframes spin-vinyl { to { transform: rotate(360deg); } }
+
+  .sending-text {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: .03em;
+  }
+  .sending-notes {
+    font-size: 1.5rem;
+    letter-spacing: .5rem;
+    animation: notes-bounce .9s ease-in-out infinite alternate;
+  }
+  @keyframes notes-bounce {
+    from { transform: translateY(-5px); opacity: 0.6; }
+    to   { transform: translateY(5px);  opacity: 1; }
+  }
 </style>
 </head>
 <body>
@@ -406,6 +479,12 @@
 </div>
 
 <footer>Powered by iTunes · Made with ❤️ for the party</footer>
+
+<div id="sending-overlay">
+  <div class="vinyl"><div class="vinyl-dot"></div></div>
+  <div class="sending-text">Sending your request…</div>
+  <div class="sending-notes">🎵 🎶 🎵</div>
+</div>
 <div id="toast"></div>
 
 <script>
@@ -524,8 +603,9 @@ document.getElementById('clear-song').addEventListener('click', () => {
 document.getElementById('submit-btn').addEventListener('click', async () => {
   if (!selectedTrack) { showToast('Please search and pick a song first 🎵', true); return; }
   const btn = document.getElementById('submit-btn');
+  const overlay = document.getElementById('sending-overlay');
   btn.disabled = true;
-  btn.textContent = 'Sending…';
+  overlay.classList.add('show');
   const params = new URLSearchParams({
     song: selectedTrack.trackName,
     artist: selectedTrack.artistName,
@@ -544,7 +624,7 @@ document.getElementById('submit-btn').addEventListener('click', async () => {
     showToast('Oops, something went wrong 😬', true);
   } finally {
     btn.disabled = false;
-    btn.textContent = '🎉 Send Request!';
+    overlay.classList.remove('show');
   }
 });
 
