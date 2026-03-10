@@ -454,7 +454,11 @@ document.getElementById('submit-btn').addEventListener('click', async () => {
   });
 
   try {
-    await fetch(`${SHEET_WEBHOOK_URL}?${params}`, { mode: 'no-cors' });
+    await fetch(SHEET_WEBHOOK_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      body: params
+    });
     showToast('🎉 Request sent! Get ready to dance!');
     selectedTrack = null;
     document.getElementById('selected-song').style.display = 'none';
