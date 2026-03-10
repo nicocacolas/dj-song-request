@@ -52,6 +52,7 @@
     border-radius: 50%;
     opacity: 0.55;
     animation: float linear infinite;
+    animation-fill-mode: backwards;
     pointer-events: none;
   }
   @keyframes float {
@@ -322,6 +323,37 @@
   }
   body[data-theme="summer"] #toast { color: #1a0a00; background: #fff3e0; border-color: #00b894; }
   body[data-theme="summer"] #toast.error { background: #fff0f0; border-color: #ff6b35; color: #ff6b35; }
+
+  /* ---- Summer: fix light-bg contrast ---- */
+  body[data-theme="summer"] .card {
+    border-color: rgba(0,0,0,0.1);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.1), 0 0 0 1px rgba(255,107,53,0.15);
+  }
+  body[data-theme="summer"] .search-wrap input,
+  body[data-theme="summer"] .name-wrap input {
+    background: rgba(0,0,0,0.06);
+    border-color: rgba(0,0,0,0.18);
+    color: #1a0a00;
+  }
+  body[data-theme="summer"] .search-wrap input::placeholder,
+  body[data-theme="summer"] .name-wrap input::placeholder { color: rgba(0,0,0,0.3); }
+  body[data-theme="summer"] #results { border-color: rgba(0,0,0,0.1); }
+  body[data-theme="summer"] #results li {
+    background: rgba(0,0,0,0.04);
+    border-bottom-color: rgba(0,0,0,0.07);
+    color: #1a0a00;
+  }
+  body[data-theme="summer"] #results li:hover { background: rgba(255,107,53,0.12); }
+  body[data-theme="summer"] #clear-song { color: rgba(0,0,0,0.3); }
+  body[data-theme="summer"] #clear-song:hover { color: var(--pink); }
+
+  /* ---- Elegant: dark text on gold button ---- */
+  body[data-theme="elegant"] button#submit-btn { color: #1a1200; }
+
+  /* ---- Ugly: fix label & card text contrast ---- */
+  body[data-theme="ugly"] label { color: var(--purple) !important; }
+  body[data-theme="ugly"] #results li { color: var(--text); background: rgba(0,0,255,0.07); }
+  body[data-theme="ugly"] #selected-song { background: rgba(0,255,0,0.15); border-color: var(--purple); }
 </style>
 </head>
 <body>
