@@ -288,13 +288,10 @@
 <body>
 
 <!-- ============================================================
-     🔧 CONFIGURATION  — edit the two lines below
+     🔧 CONFIGURATION
      ============================================================ -->
 <script>
-  // 1️⃣  Your Spotify CLIENT_ID  (get it from developer.spotify.com)
-  const SPOTIFY_CLIENT_ID = "bf8a3486be2743dca5bda8910bbd5470";
-
-  // 2️⃣  Your Google Apps Script Web App URL  (see setup guide)
+  // Your Google Apps Script Web App URL
   const SHEET_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwb8jm6q6cfoGYa68594YkJkE7pr8k97qbYWkUJUJ4xdYwlx5sN7Td1EZPfRqFtMxN-mQ/exec";
 
   // Optional: customise the party name shown on the page
@@ -313,7 +310,7 @@
 <div class="card">
   <div id="config-banner">
     <strong>⚙️ Setup needed</strong>
-    Open this file and fill in <code>SPOTIFY_CLIENT_ID</code> and <code>SHEET_WEBHOOK_URL</code> at the top of the &lt;script&gt; block. See the setup guide below.
+    Open this file and fill in <code>SHEET_WEBHOOK_URL</code> at the top of the &lt;script&gt; block.
   </div>
 
   <label>🔍 Search for a song</label>
@@ -341,7 +338,7 @@
   <button id="submit-btn">🎉 Send Request!</button>
 </div>
 
-<footer>Powered by Spotify · Made with ❤️ for the party</footer>
+<footer>Powered by iTunes · Made with ❤️ for the party</footer>
 <div id="toast"></div>
 
 <script>
@@ -350,7 +347,7 @@ document.getElementById('subtitle-text').textContent =
   `Pick a song for ${PARTY_NAME}!`;
 
 // ── Config check ─────────────────────────────────────────────────────────
-if (SPOTIFY_CLIENT_ID === "YOUR_SPOTIFY_CLIENT_ID" || SHEET_WEBHOOK_URL === "YOUR_GOOGLE_APPS_SCRIPT_URL") {
+if (SHEET_WEBHOOK_URL === "YOUR_GOOGLE_APPS_SCRIPT_URL") {
   document.getElementById('config-banner').style.display = 'block';
 }
 
@@ -370,86 +367,7 @@ for (let i = 0; i < 18; i++) {
   document.body.appendChild(d);
 }
 
-// ── Spotify PKCE Auth ─────────────────────────────────────────────────────
-const REDIRECT_URI = window.location.href.split('?')[0].split('#')[0];
-let accessToken = null;
-
-async function sha256(plain) {
-  const enc = new TextEncoder().encode(plain);
-  const hash = await crypto.subtle.digest('SHA-256', enc);
-  return hash;
-}
-function base64urlencode(buf) {
-  return btoa(String.fromCharCode(...new Uint8Array(buf)))
-    .replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
-}
-function generateRandom(len=64) {
-  const arr = new Uint8Array(len);
-  crypto.getRandomValues(arr);
-  return base64urlencode(arr);
-}
-
-async function initSpotify() {
-  // Check if returning from Spotify auth
-  const params = new URLSearchParams(window.location.search);
-  const code = params.get('code');
-  const errorParam = params.get('error');
-
-  if (errorParam) {
-    showToast('Spotify login cancelled', true);
-    window.history.replaceState({}, '', window.location.pathname);
-    return;
-  }
-
-  if (code) {
-    const verifier = sessionStorage.getItem('pkce_verifier');
-    if (!verifier) return;
-    try {
-      const resp = await fetch('https://accounts.spotify.com/api/token', {
-        method: 'POST',
-        headers: {'Content-Type':'application/x-www-form-urlencoded'},
-        body: new URLSearchParams({
-          grant_type: 'authorization_code',
-          code, redirect_uri: REDIRECT_URI,
-          client_id: SPOTIFY_CLIENT_ID,
-          code_verifier: verifier
-        })
-      });
-      const data = await resp.json();
-      if (data.access_token) {
-        accessToken = data.access_token;
-        sessionStorage.setItem('spotify_token', accessToken);
-        sessionStorage.setItem('spotify_token_exp', Date.now() + data.expires_in * 1000);
-      }
-    } catch(e) { console.error(e); }
-    window.history.replaceState({}, '', window.location.pathname);
-    return;
-  }
-
-  // Check stored token
-  const stored = sessionStorage.getItem('spotify_token');
-  const exp = sessionStorage.getItem('spotify_token_exp');
-  if (stored && exp && Date.now() < Number(exp)) {
-    accessToken = stored;
-  }
-}
-
-async function loginSpotify() {
-  const verifier = generateRandom();
-  const challenge = base64urlencode(await sha256(verifier));
-  sessionStorage.setItem('pkce_verifier', verifier);
-  const url = `https://accounts.spotify.com/authorize?` + new URLSearchParams({
-    response_type: 'code',
-    client_id: SPOTIFY_CLIENT_ID,
-    scope: 'user-read-private',
-    redirect_uri: REDIRECT_URI,
-    code_challenge_method: 'S256',
-    code_challenge: challenge
-  });
-  window.location = url;
-}
-
-// ── Spotify Search ────────────────────────────────────────────────────────
+// ── iTunes Search ─────────────────────────────────────────────────────────
 let searchTimeout = null;
 let selectedTrack = null;
 
@@ -465,19 +383,11 @@ searchInput.addEventListener('input', () => {
 });
 
 async function doSearch(q) {
-  if (!accessToken) {
-    // Try to trigger login on first search
-    if (SPOTIFY_CLIENT_ID !== "YOUR_SPOTIFY_CLIENT_ID") loginSpotify();
-    return;
-  }
   spinner.style.display = 'block';
   try {
-    const r = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(q)}&type=track&limit=6`, {
-      headers: { Authorization: `Bearer ${accessToken}` }
-    });
-    if (r.status === 401) { accessToken = null; sessionStorage.removeItem('spotify_token'); loginSpotify(); return; }
+    const r = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&entity=song&limit=6`);
     const data = await r.json();
-    renderResults(data.tracks?.items || []);
+    renderResults(data.results || []);
   } catch(e) {
     console.error(e);
   } finally {
@@ -493,12 +403,12 @@ function renderResults(tracks) {
   }
   tracks.forEach(track => {
     const li = document.createElement('li');
-    const img = track.album.images[2]?.url || track.album.images[0]?.url || '';
+    const img = track.artworkUrl100 || '';
     li.innerHTML = `
       <img src="${img}" alt="">
       <div class="result-info">
-        <div class="result-title">${escHtml(track.name)}</div>
-        <div class="result-artist">${escHtml(track.artists.map(a=>a.name).join(', '))} · ${escHtml(track.album.name)}</div>
+        <div class="result-title">${escHtml(track.trackName)}</div>
+        <div class="result-artist">${escHtml(track.artistName)} · ${escHtml(track.collectionName)}</div>
       </div>`;
     li.addEventListener('click', () => selectTrack(track));
     resultsList.appendChild(li);
@@ -512,9 +422,9 @@ function selectTrack(track) {
   resultsList.innerHTML = '';
   searchInput.value = '';
 
-  document.getElementById('sel-img').src = track.album.images[1]?.url || track.album.images[0]?.url || '';
-  document.getElementById('sel-title').textContent = track.name;
-  document.getElementById('sel-artist').textContent = track.artists.map(a=>a.name).join(', ');
+  document.getElementById('sel-img').src = track.artworkUrl100 || '';
+  document.getElementById('sel-title').textContent = track.trackName;
+  document.getElementById('sel-artist').textContent = track.artistName;
   document.getElementById('selected-song').style.display = 'flex';
 }
 
@@ -535,10 +445,10 @@ document.getElementById('submit-btn').addEventListener('click', async () => {
   btn.textContent = 'Sending…';
 
   const payload = {
-    song: selectedTrack.name,
-    artist: selectedTrack.artists.map(a=>a.name).join(', '),
-    album: selectedTrack.album.name,
-    spotify_url: selectedTrack.external_urls.spotify,
+    song: selectedTrack.trackName,
+    artist: selectedTrack.artistName,
+    album: selectedTrack.collectionName,
+    itunes_url: selectedTrack.trackViewUrl,
     requested_by: document.getElementById('name-input').value.trim() || 'Anonymous',
     timestamp: new Date().toLocaleString()
   };
@@ -574,9 +484,6 @@ function showToast(msg, isError=false) {
 function escHtml(s) {
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
-
-// ── Boot ──────────────────────────────────────────────────────────────────
-initSpotify();
 </script>
 </body>
 </html>
