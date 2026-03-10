@@ -444,22 +444,17 @@ document.getElementById('submit-btn').addEventListener('click', async () => {
   btn.disabled = true;
   btn.textContent = 'Sending…';
 
-  const payload = {
+  const params = new URLSearchParams({
     song: selectedTrack.trackName,
     artist: selectedTrack.artistName,
     album: selectedTrack.collectionName,
     itunes_url: selectedTrack.trackViewUrl,
     requested_by: document.getElementById('name-input').value.trim() || 'Anonymous',
     timestamp: new Date().toLocaleString()
-  };
+  });
 
   try {
-    await fetch(SHEET_WEBHOOK_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(payload)
-    });
+    await fetch(`${SHEET_WEBHOOK_URL}?${params}`, { mode: 'no-cors' });
     showToast('🎉 Request sent! Get ready to dance!');
     selectedTrack = null;
     document.getElementById('selected-song').style.display = 'none';
