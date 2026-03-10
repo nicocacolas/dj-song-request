@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DJ Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d1a;
+    --card: #1a1a2e;
+    --border: rgba(255,255,255,0.08);
+    --accent: #b94dff;
+    --green: #4dff91;
+    --pink: #ff4d8d;
+    --text: #fff;
+    --subtext: #8888aa;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+  }
+
+  .panel {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    padding: 2rem 1.8rem;
+    width: min(460px, 100%);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+  }
+
+  .panel-title {
+    font-size: 1.3rem;
+    font-weight: 800;
+    margin-bottom: 1.6rem;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+  }
+
+  label {
+    display: block;
+    font-size: .8rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: var(--subtext);
+    margin-bottom: .4rem;
+  }
+
+  input[type="text"], input[type="password"] {
+    width: 100%;
+    padding: .75rem 1rem;
+    border-radius: 12px;
+    border: 2px solid var(--border);
+    background: rgba(255,255,255,0.05);
+    color: #fff;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    outline: none;
+    transition: border-color .2s;
+  }
+  input:focus { border-color: var(--accent); }
+  input::placeholder { color: rgba(255,255,255,0.2); }
+
+  .btn {
+    width: 100%;
+    padding: .85rem;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, var(--accent), #ff4d8d);
+    color: #fff;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: transform .15s, box-shadow .15s;
+    box-shadow: 0 4px 16px rgba(185,77,255,0.35);
+    margin-top: 1rem;
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(185,77,255,0.5); }
+  .btn:active { transform: translateY(0); }
+  .btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+  .btn.save { background: linear-gradient(135deg, #4dff91, #00c9a7); box-shadow: 0 4px 16px rgba(77,255,145,0.3); color: #0d0d1a; }
+  .btn.save:hover { box-shadow: 0 6px 24px rgba(77,255,145,0.5); }
+
+  /* Theme grid */
+  .theme-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: .6rem;
+    margin-bottom: 1.4rem;
+  }
+
+  .theme-card {
+    border-radius: 12px;
+    padding: .6rem .3rem;
+    cursor: pointer;
+    border: 2px solid transparent;
+    text-align: center;
+    font-size: .7rem;
+    font-weight: 800;
+    transition: border-color .15s, transform .15s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .4rem;
+  }
+  .theme-card:hover { transform: translateY(-2px); }
+  .theme-card.active { border-color: #fff; }
+  .theme-card .swatches {
+    display: flex;
+    gap: 2px;
+  }
+  .theme-card .swatch {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+  .theme-card .label { line-height: 1.2; }
+
+  /* Per-theme card styles */
+  .theme-card[data-t="party"]   { background: #1a0533; color: #ff4d8d; }
+  .theme-card[data-t="summer"]  { background: #fff8f0; color: #ff6b35; }
+  .theme-card[data-t="elegant"] { background: #1c1c1c; color: #d4a843; }
+  .theme-card[data-t="club"]    { background: #03030f; color: #ff00cc; }
+  .theme-card[data-t="ugly"]    { background: #ffff00; color: #0000ff; font-family: 'Comic Sans MS', cursive; }
+
+  .field { margin-bottom: 1.2rem; }
+
+  #status {
+    margin-top: .8rem;
+    text-align: center;
+    font-size: .85rem;
+    font-weight: 700;
+    min-height: 1.2em;
+    color: var(--green);
+  }
+  #status.error { color: var(--pink); }
+
+  .back-link {
+    display: block;
+    text-align: center;
+    margin-top: 1.2rem;
+    font-size: .8rem;
+    color: var(--subtext);
+    text-decoration: none;
+  }
+  .back-link:hover { color: #fff; }
+</style>
+</head>
+<body>
+
+<script>
+  const SHEET_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwbxS0zZmK9HdhbUwp3romAV9-wPL_Lf2yRUEa5RcgRqChmWtK9UM2JsiIjX_2hp-STqQ/exec";
+  const ADMIN_PASSWORD = "iWantToParty42069!!!";
+</script>
+
+<!-- ── Password gate ── -->
+<div class="panel" id="gate-panel">
+  <div class="panel-title">🔐 Admin Dashboard</div>
+  <div class="field">
+    <label>Password</label>
+    <input type="password" id="pw-input" placeholder="Enter password…" />
+  </div>
+  <button class="btn" id="unlock-btn">Unlock</button>
+  <div id="gate-error" style="color:#ff4d8d;font-size:.82rem;margin-top:.6rem;min-height:1em;text-align:center;font-weight:700;"></div>
+</div>
+
+<!-- ── Dashboard ── -->
+<div class="panel" id="dashboard" style="display:none">
+  <div class="panel-title">🎛️ Party Settings</div>
+
+  <div class="field">
+    <label>Party Name</label>
+    <input type="text" id="party-name" placeholder="e.g. Lisa's Birthday" maxlength="50" />
+  </div>
+
+  <div class="field">
+    <label>Theme</label>
+    <div class="theme-grid">
+      <div class="theme-card" data-t="party">
+        <div class="swatches">
+          <div class="swatch" style="background:#ff4d8d"></div>
+          <div class="swatch" style="background:#ffe94d"></div>
+          <div class="swatch" style="background:#b94dff"></div>
+        </div>
+        <div class="label">Party</div>
+      </div>
+      <div class="theme-card" data-t="summer">
+        <div class="swatches">
+          <div class="swatch" style="background:#ff6b35"></div>
+          <div class="swatch" style="background:#ffc947"></div>
+          <div class="swatch" style="background:#00b894"></div>
+        </div>
+        <div class="label">Summer</div>
+      </div>
+      <div class="theme-card" data-t="elegant">
+        <div class="swatches">
+          <div class="swatch" style="background:#d4a843"></div>
+          <div class="swatch" style="background:#f0dea0"></div>
+          <div class="swatch" style="background:#c09030"></div>
+        </div>
+        <div class="label">Elegant</div>
+      </div>
+      <div class="theme-card" data-t="club">
+        <div class="swatches">
+          <div class="swatch" style="background:#ff00cc"></div>
+          <div class="swatch" style="background:#00ffee"></div>
+          <div class="swatch" style="background:#00ff88"></div>
+        </div>
+        <div class="label">Club</div>
+      </div>
+      <div class="theme-card" data-t="ugly">
+        <div class="swatches">
+          <div class="swatch" style="background:#ff0000"></div>
+          <div class="swatch" style="background:#00ff00"></div>
+          <div class="swatch" style="background:#0000ff"></div>
+        </div>
+        <div class="label">Ugly!!</div>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn save" id="save-btn">💾 Save Changes</button>
+  <div id="status"></div>
+  <a href="/" class="back-link">← Back to song request page</a>
+</div>
+
+<script>
+// ── Password gate ─────────────────────────────────────────────────────────
+let selectedTheme = 'party';
+
+function unlock() {
+  const val = document.getElementById('pw-input').value;
+  if (val === ADMIN_PASSWORD) {
+    document.getElementById('gate-panel').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    loadCurrentConfig();
+  } else {
+    document.getElementById('gate-error').textContent = 'Wrong password.';
+    document.getElementById('pw-input').value = '';
+  }
+}
+
+document.getElementById('unlock-btn').addEventListener('click', unlock);
+document.getElementById('pw-input').addEventListener('keydown', e => { if (e.key === 'Enter') unlock(); });
+
+// ── Theme picker ──────────────────────────────────────────────────────────
+document.querySelectorAll('.theme-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.theme-card').forEach(c => c.classList.remove('active'));
+    card.classList.add('active');
+    selectedTheme = card.dataset.t;
+  });
+});
+
+function setActiveTheme(name) {
+  selectedTheme = name;
+  document.querySelectorAll('.theme-card').forEach(c => {
+    c.classList.toggle('active', c.dataset.t === name);
+  });
+}
+
+// ── Load current config ───────────────────────────────────────────────────
+async function loadCurrentConfig() {
+  try {
+    const r = await fetch(`${SHEET_WEBHOOK_URL}?action=getConfig`);
+    const cfg = await r.json();
+    if (cfg.party_name) document.getElementById('party-name').value = cfg.party_name;
+    if (cfg.theme) setActiveTheme(cfg.theme);
+  } catch(e) {
+    setActiveTheme('party');
+  }
+}
+
+// ── Save config ───────────────────────────────────────────────────────────
+document.getElementById('save-btn').addEventListener('click', async () => {
+  const btn = document.getElementById('save-btn');
+  const status = document.getElementById('status');
+  const name = document.getElementById('party-name').value.trim() || 'the Party';
+
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+  status.textContent = '';
+  status.className = '';
+
+  const params = new URLSearchParams({
+    type: 'config',
+    party_name: name,
+    theme: selectedTheme
+  });
+
+  try {
+    await fetch(SHEET_WEBHOOK_URL, { method: 'POST', mode: 'no-cors', body: params });
+    status.textContent = '✓ Saved! Changes will appear on the next page load.';
+  } catch(e) {
+    status.textContent = 'Something went wrong.';
+    status.className = 'error';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '💾 Save Changes';
+  }
+});
+</script>
+</body>
+</html>

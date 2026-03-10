@@ -283,6 +283,43 @@
     z-index: 1;
     position: relative;
   }
+
+  /* ---- Ugly theme overrides ---- */
+  body[data-theme="ugly"] {
+    font-family: 'Comic Sans MS', 'Comic Sans', cursive !important;
+  }
+  body[data-theme="ugly"] h1 {
+    font-family: 'Comic Sans MS', 'Comic Sans', cursive !important;
+    -webkit-text-fill-color: var(--pink) !important;
+    background: none !important;
+    filter: drop-shadow(3px 3px 0 var(--purple)) !important;
+  }
+  body[data-theme="ugly"] .card {
+    border: 4px dashed var(--purple) !important;
+    border-radius: 0 !important;
+  }
+  body[data-theme="ugly"] button#submit-btn {
+    background: linear-gradient(135deg, #ff0000, #0000ff) !important;
+    border-radius: 0 !important;
+    text-transform: uppercase;
+    letter-spacing: .2em;
+  }
+  body[data-theme="ugly"] .search-wrap input,
+  body[data-theme="ugly"] .name-wrap input {
+    border-radius: 0 !important;
+    font-family: 'Comic Sans MS', cursive !important;
+  }
+  body[data-theme="ugly"] .dot { display: none; }
+
+  /* ---- Summer theme (light bg) overrides ---- */
+  body[data-theme="summer"]::before {
+    background-image:
+      radial-gradient(circle at 15% 20%, rgba(255,107,53,0.12) 0%, transparent 40%),
+      radial-gradient(circle at 85% 75%, rgba(0,184,148,0.12) 0%, transparent 40%),
+      radial-gradient(circle at 50% 50%, rgba(255,201,71,0.08) 0%, transparent 60%);
+  }
+  body[data-theme="summer"] #toast { color: #1a0a00; background: #fff3e0; border-color: #00b894; }
+  body[data-theme="summer"] #toast.error { background: #fff0f0; border-color: #ff6b35; color: #ff6b35; }
 </style>
 </head>
 <body>
@@ -291,11 +328,7 @@
      🔧 CONFIGURATION
      ============================================================ -->
 <script>
-  // Your Google Apps Script Web App URL
   const SHEET_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwbxS0zZmK9HdhbUwp3romAV9-wPL_Lf2yRUEa5RcgRqChmWtK9UM2JsiIjX_2hp-STqQ/exec";
-
-  // Optional: customise the party name shown on the page
-  const PARTY_NAME = "the Party";
 </script>
 <!-- ============================================================ -->
 
@@ -342,11 +375,22 @@
 <div id="toast"></div>
 
 <script>
-// ── Subtitle ──────────────────────────────────────────────────────────────
-document.getElementById('subtitle-text').textContent =
-  `Pick a song for ${PARTY_NAME}!`;
+// ── Themes ────────────────────────────────────────────────────────────────
+const THEMES = {
+  party:   { '--bg':'#1a0533','--card':'#2b0d4e','--pink':'#ff4d8d','--yellow':'#ffe94d','--purple':'#b94dff','--teal':'#4dffd6','--text':'#ffffff','--subtext':'#d4b8f0' },
+  summer:  { '--bg':'#fff8f0','--card':'#ffe8cc','--pink':'#ff6b35','--yellow':'#ffc947','--purple':'#ff8c00','--teal':'#00b894','--text':'#1a0a00','--subtext':'#7d4e24' },
+  elegant: { '--bg':'#0c0c0c','--card':'#1c1c1c','--pink':'#d4a843','--yellow':'#f0dea0','--purple':'#c09030','--teal':'#d4a843','--text':'#f5f0e8','--subtext':'#a08050' },
+  club:    { '--bg':'#03030f','--card':'#0a0a20','--pink':'#ff00cc','--yellow':'#00ffee','--purple':'#7700ff','--teal':'#00ff88','--text':'#ffffff','--subtext':'#99ffdd' },
+  ugly:    { '--bg':'#ffff00','--card':'#ff69b4','--pink':'#ff0000','--yellow':'#00ff00','--purple':'#0000ff','--teal':'#ff6600','--text':'#000080','--subtext':'#660000' }
+};
 
-// ── Config check ─────────────────────────────────────────────────────────
+function applyTheme(name) {
+  const t = THEMES[name] || THEMES.party;
+  Object.entries(t).forEach(([k, v]) => document.documentElement.style.setProperty(k, v));
+  document.body.dataset.theme = name;
+}
+
+// ── Config check ──────────────────────────────────────────────────────────
 if (SHEET_WEBHOOK_URL === "YOUR_GOOGLE_APPS_SCRIPT_URL") {
   document.getElementById('config-banner').style.display = 'block';
 }
@@ -365,6 +409,20 @@ for (let i = 0; i < 18; i++) {
     animation-delay:${Math.random()*10}s;
   `;
   document.body.appendChild(d);
+}
+
+// ── Load config from Google Sheet ─────────────────────────────────────────
+async function loadConfig() {
+  try {
+    const r = await fetch(`${SHEET_WEBHOOK_URL}?action=getConfig`);
+    const cfg = await r.json();
+    const name = cfg.party_name || 'the Party';
+    document.getElementById('subtitle-text').textContent = `Pick a song for ${name}!`;
+    document.title = `🎉 ${name} — Song Request`;
+    if (cfg.theme) applyTheme(cfg.theme);
+  } catch(e) {
+    document.getElementById('subtitle-text').textContent = 'Pick a song for the Party!';
+  }
 }
 
 // ── iTunes Search ─────────────────────────────────────────────────────────
@@ -397,15 +455,11 @@ async function doSearch(q) {
 
 function renderResults(tracks) {
   resultsList.innerHTML = '';
-  if (!tracks.length) {
-    resultsList.style.display = 'none';
-    return;
-  }
+  if (!tracks.length) { resultsList.style.display = 'none'; return; }
   tracks.forEach(track => {
     const li = document.createElement('li');
-    const img = track.artworkUrl100 || '';
     li.innerHTML = `
-      <img src="${img}" alt="">
+      <img src="${track.artworkUrl100 || ''}" alt="">
       <div class="result-info">
         <div class="result-title">${escHtml(track.trackName)}</div>
         <div class="result-artist">${escHtml(track.artistName)} · ${escHtml(track.collectionName)}</div>
@@ -421,7 +475,6 @@ function selectTrack(track) {
   resultsList.style.display = 'none';
   resultsList.innerHTML = '';
   searchInput.value = '';
-
   document.getElementById('sel-img').src = track.artworkUrl100 || '';
   document.getElementById('sel-title').textContent = track.trackName;
   document.getElementById('sel-artist').textContent = track.artistName;
@@ -436,14 +489,9 @@ document.getElementById('clear-song').addEventListener('click', () => {
 // ── Submit ────────────────────────────────────────────────────────────────
 document.getElementById('submit-btn').addEventListener('click', async () => {
   if (!selectedTrack) { showToast('Please search and pick a song first 🎵', true); return; }
-  if (SHEET_WEBHOOK_URL === "YOUR_GOOGLE_APPS_SCRIPT_URL") {
-    showToast('⚙️ Webhook URL not configured yet', true); return;
-  }
-
   const btn = document.getElementById('submit-btn');
   btn.disabled = true;
   btn.textContent = 'Sending…';
-
   const params = new URLSearchParams({
     song: selectedTrack.trackName,
     artist: selectedTrack.artistName,
@@ -452,13 +500,8 @@ document.getElementById('submit-btn').addEventListener('click', async () => {
     requested_by: document.getElementById('name-input').value.trim() || 'Anonymous',
     timestamp: new Date().toLocaleString()
   });
-
   try {
-    await fetch(SHEET_WEBHOOK_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      body: params
-    });
+    await fetch(SHEET_WEBHOOK_URL, { method: 'POST', mode: 'no-cors', body: params });
     showToast('🎉 Request sent! Get ready to dance!');
     selectedTrack = null;
     document.getElementById('selected-song').style.display = 'none';
@@ -483,6 +526,9 @@ function showToast(msg, isError=false) {
 function escHtml(s) {
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+
+// ── Boot ──────────────────────────────────────────────────────────────────
+loadConfig();
 </script>
 </body>
 </html>
