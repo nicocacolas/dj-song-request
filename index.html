@@ -621,6 +621,7 @@ document.getElementById('submit-btn').addEventListener('click', async () => {
     showToast('🎉 Request sent! Get ready to dance!');
     selectedTrack = null;
     document.getElementById('selected-song').style.display = 'none';
+    document.querySelector('.search-wrap').style.display = 'block';
     document.getElementById('name-input').value = '';
   } catch(e) {
     showToast('Oops, something went wrong 😬', true);
