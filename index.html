@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎉 Song Request</title>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* ===================== CONFIG ===================== */
+  /* Replace these with your actual values (see setup guide below) */
+  /* ===================================================*/
+
+  :root {
+    --pink:    #ff4d8d;
+    --yellow:  #ffe94d;
+    --purple:  #b94dff;
+    --teal:    #4dffd6;
+    --bg:      #1a0533;
+    --card:    #2b0d4e;
+    --text:    #fff;
+    --subtext: #d4b8f0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* ---- Confetti bg ---- */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 15% 20%, rgba(255,77,141,0.18) 0%, transparent 40%),
+      radial-gradient(circle at 85% 75%, rgba(185,77,255,0.18) 0%, transparent 40%),
+      radial-gradient(circle at 50% 50%, rgba(77,255,214,0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  /* floating dots */
+  .dot {
+    position: fixed;
+    border-radius: 50%;
+    opacity: 0.55;
+    animation: float linear infinite;
+    pointer-events: none;
+  }
+  @keyframes float {
+    0%   { transform: translateY(110vh) rotate(0deg); opacity: 0; }
+    10%  { opacity: 0.55; }
+    90%  { opacity: 0.55; }
+    100% { transform: translateY(-10vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* ---- Header ---- */
+  header {
+    text-align: center;
+    padding: 2.5rem 1rem 1.5rem;
+    position: relative;
+    z-index: 1;
+  }
+  .emoji-row { font-size: 2rem; letter-spacing: .4rem; margin-bottom: .4rem; }
+  h1 {
+    font-family: 'Pacifico', cursive;
+    font-size: clamp(2.4rem, 7vw, 4rem);
+    background: linear-gradient(135deg, var(--yellow) 0%, var(--pink) 60%, var(--purple) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 0 18px rgba(255,77,141,0.45));
+    line-height: 1.1;
+  }
+  .subtitle {
+    margin-top: .6rem;
+    font-size: 1.05rem;
+    color: var(--subtext);
+    font-weight: 600;
+  }
+
+  /* ---- Card ---- */
+  .card {
+    background: var(--card);
+    border: 1.5px solid rgba(255,255,255,0.09);
+    border-radius: 24px;
+    padding: 2rem 1.6rem;
+    width: min(480px, 92vw);
+    margin: .5rem auto 2rem;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.45), 0 0 0 1px rgba(185,77,255,0.12);
+  }
+
+  label {
+    display: block;
+    font-weight: 800;
+    font-size: .85rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--teal);
+    margin-bottom: .4rem;
+  }
+
+  /* ---- Search box ---- */
+  .search-wrap {
+    position: relative;
+    margin-bottom: .5rem;
+  }
+  .search-wrap input {
+    width: 100%;
+    padding: .75rem 1rem .75rem 2.8rem;
+    border-radius: 14px;
+    border: 2px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.07);
+    color: #fff;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .search-wrap input:focus { border-color: var(--pink); }
+  .search-wrap input::placeholder { color: rgba(255,255,255,0.3); }
+  .search-icon {
+    position: absolute;
+    left: .9rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.1rem;
+    pointer-events: none;
+  }
+  .spinner {
+    position: absolute;
+    right: .9rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px; height: 18px;
+    border: 2.5px solid rgba(255,255,255,0.15);
+    border-top-color: var(--pink);
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+    display: none;
+  }
+  @keyframes spin { to { transform: translateY(-50%) rotate(360deg); } }
+
+  /* ---- Results ---- */
+  #results {
+    list-style: none;
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: .8rem;
+    border: 1.5px solid rgba(255,255,255,0.07);
+    display: none;
+  }
+  #results li {
+    display: flex;
+    align-items: center;
+    gap: .8rem;
+    padding: .7rem .9rem;
+    cursor: pointer;
+    background: rgba(255,255,255,0.04);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    transition: background .15s;
+  }
+  #results li:last-child { border-bottom: none; }
+  #results li:hover { background: rgba(255,77,141,0.18); }
+  #results li img { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
+  .result-info { flex: 1; min-width: 0; }
+  .result-title { font-weight: 800; font-size: .93rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .result-artist { font-size: .78rem; color: var(--subtext); }
+
+  /* ---- Selected song ---- */
+  #selected-song {
+    display: none;
+    align-items: center;
+    gap: .8rem;
+    background: rgba(77,255,214,0.08);
+    border: 1.5px solid var(--teal);
+    border-radius: 14px;
+    padding: .7rem .9rem;
+    margin-bottom: .8rem;
+    position: relative;
+  }
+  #selected-song img { width: 48px; height: 48px; border-radius: 8px; object-fit: cover; }
+  #selected-song .sel-info { flex: 1; min-width: 0; }
+  #selected-song .sel-title { font-weight: 800; font-size: .95rem; }
+  #selected-song .sel-artist { font-size: .8rem; color: var(--subtext); }
+  #clear-song {
+    background: none; border: none; color: rgba(255,255,255,0.4);
+    font-size: 1.2rem; cursor: pointer; padding: .2rem;
+    transition: color .15s;
+  }
+  #clear-song:hover { color: var(--pink); }
+
+  /* ---- Name field ---- */
+  .name-wrap { margin-top: 1.1rem; margin-bottom: 1.4rem; }
+  .name-wrap input {
+    width: 100%;
+    padding: .75rem 1rem;
+    border-radius: 14px;
+    border: 2px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.07);
+    color: #fff;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .name-wrap input:focus { border-color: var(--yellow); }
+  .name-wrap input::placeholder { color: rgba(255,255,255,0.3); }
+
+  /* ---- Submit ---- */
+  button#submit-btn {
+    width: 100%;
+    padding: .9rem;
+    border-radius: 14px;
+    border: none;
+    background: linear-gradient(135deg, var(--pink), var(--purple));
+    color: #fff;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: transform .15s, box-shadow .15s;
+    box-shadow: 0 4px 20px rgba(255,77,141,0.4);
+    letter-spacing: .02em;
+  }
+  button#submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(255,77,141,0.55); }
+  button#submit-btn:active { transform: translateY(0); }
+  button#submit-btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+  /* ---- Toast ---- */
+  #toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(4rem);
+    background: #1a2a1a;
+    border: 1.5px solid #4dff91;
+    color: #4dff91;
+    padding: .75rem 1.4rem;
+    border-radius: 50px;
+    font-weight: 800;
+    font-size: .95rem;
+    transition: transform .35s cubic-bezier(.34,1.56,.64,1), opacity .35s;
+    opacity: 0;
+    z-index: 999;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  #toast.error { background: #2a1a1a; border-color: var(--pink); color: var(--pink); }
+
+  /* ---- Config banner ---- */
+  #config-banner {
+    background: rgba(255,233,77,0.12);
+    border: 1.5px solid var(--yellow);
+    border-radius: 14px;
+    padding: .9rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: .82rem;
+    color: var(--yellow);
+    line-height: 1.5;
+    display: none; /* shown by JS if not configured */
+  }
+  #config-banner strong { display: block; margin-bottom: .2rem; font-size: .9rem; }
+
+  /* ---- Footer ---- */
+  footer {
+    text-align: center;
+    padding: 1rem;
+    font-size: .75rem;
+    color: rgba(255,255,255,0.2);
+    z-index: 1;
+    position: relative;
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     🔧 CONFIGURATION  — edit the two lines below
+     ============================================================ -->
+<script>
+  // 1️⃣  Your Spotify CLIENT_ID  (get it from developer.spotify.com)
+  const SPOTIFY_CLIENT_ID = "bf8a3486be2743dca5bda8910bbd5470";
+
+  // 2️⃣  Your Google Apps Script Web App URL  (see setup guide)
+  const SHEET_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwb8jm6q6cfoGYa68594YkJkE7pr8k97qbYWkUJUJ4xdYwlx5sN7Td1EZPfRqFtMxN-mQ/exec";
+
+  // Optional: customise the party name shown on the page
+  const PARTY_NAME = "the Party";
+</script>
+<!-- ============================================================ -->
+
+<!-- Floating dots injected by JS -->
+
+<header>
+  <div class="emoji-row">🎂 🎉 🎶 🎊 🎵</div>
+  <h1>Song Request</h1>
+  <p class="subtitle" id="subtitle-text">Pick a song for the DJ!</p>
+</header>
+
+<div class="card">
+  <div id="config-banner">
+    <strong>⚙️ Setup needed</strong>
+    Open this file and fill in <code>SPOTIFY_CLIENT_ID</code> and <code>SHEET_WEBHOOK_URL</code> at the top of the &lt;script&gt; block. See the setup guide below.
+  </div>
+
+  <label>🔍 Search for a song</label>
+  <div class="search-wrap">
+    <span class="search-icon">🎵</span>
+    <input type="text" id="search-input" placeholder="Artist or song name…" autocomplete="off" />
+    <div class="spinner" id="spinner"></div>
+  </div>
+  <ul id="results"></ul>
+
+  <div id="selected-song">
+    <img id="sel-img" src="" alt="">
+    <div class="sel-info">
+      <div class="sel-title" id="sel-title"></div>
+      <div class="sel-artist" id="sel-artist"></div>
+    </div>
+    <button id="clear-song" title="Clear selection">✕</button>
+  </div>
+
+  <div class="name-wrap">
+    <label>👤 Your name <span style="font-weight:400;text-transform:none;font-size:.8rem;color:var(--subtext)">(optional)</span></label>
+    <input type="text" id="name-input" placeholder="e.g. Sarah" maxlength="40" />
+  </div>
+
+  <button id="submit-btn">🎉 Send Request!</button>
+</div>
+
+<footer>Powered by Spotify · Made with ❤️ for the party</footer>
+<div id="toast"></div>
+
+<script>
+// ── Subtitle ──────────────────────────────────────────────────────────────
+document.getElementById('subtitle-text').textContent =
+  `Pick a song for ${PARTY_NAME}!`;
+
+// ── Config check ─────────────────────────────────────────────────────────
+if (SPOTIFY_CLIENT_ID === "YOUR_SPOTIFY_CLIENT_ID" || SHEET_WEBHOOK_URL === "YOUR_GOOGLE_APPS_SCRIPT_URL") {
+  document.getElementById('config-banner').style.display = 'block';
+}
+
+// ── Floating dots ─────────────────────────────────────────────────────────
+const colors = ['#ff4d8d','#ffe94d','#b94dff','#4dffd6','#ff8c4d'];
+for (let i = 0; i < 18; i++) {
+  const d = document.createElement('div');
+  d.className = 'dot';
+  const size = Math.random() * 10 + 5;
+  d.style.cssText = `
+    width:${size}px;height:${size}px;
+    left:${Math.random()*100}vw;
+    background:${colors[Math.floor(Math.random()*colors.length)]};
+    animation-duration:${6+Math.random()*10}s;
+    animation-delay:${Math.random()*10}s;
+  `;
+  document.body.appendChild(d);
+}
+
+// ── Spotify PKCE Auth ─────────────────────────────────────────────────────
+const REDIRECT_URI = window.location.href.split('?')[0].split('#')[0];
+let accessToken = null;
+
+async function sha256(plain) {
+  const enc = new TextEncoder().encode(plain);
+  const hash = await crypto.subtle.digest('SHA-256', enc);
+  return hash;
+}
+function base64urlencode(buf) {
+  return btoa(String.fromCharCode(...new Uint8Array(buf)))
+    .replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+function generateRandom(len=64) {
+  const arr = new Uint8Array(len);
+  crypto.getRandomValues(arr);
+  return base64urlencode(arr);
+}
+
+async function initSpotify() {
+  // Check if returning from Spotify auth
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('code');
+  const errorParam = params.get('error');
+
+  if (errorParam) {
+    showToast('Spotify login cancelled', true);
+    window.history.replaceState({}, '', window.location.pathname);
+    return;
+  }
+
+  if (code) {
+    const verifier = sessionStorage.getItem('pkce_verifier');
+    if (!verifier) return;
+    try {
+      const resp = await fetch('https://accounts.spotify.com/api/token', {
+        method: 'POST',
+        headers: {'Content-Type':'application/x-www-form-urlencoded'},
+        body: new URLSearchParams({
+          grant_type: 'authorization_code',
+          code, redirect_uri: REDIRECT_URI,
+          client_id: SPOTIFY_CLIENT_ID,
+          code_verifier: verifier
+        })
+      });
+      const data = await resp.json();
+      if (data.access_token) {
+        accessToken = data.access_token;
+        sessionStorage.setItem('spotify_token', accessToken);
+        sessionStorage.setItem('spotify_token_exp', Date.now() + data.expires_in * 1000);
+      }
+    } catch(e) { console.error(e); }
+    window.history.replaceState({}, '', window.location.pathname);
+    return;
+  }
+
+  // Check stored token
+  const stored = sessionStorage.getItem('spotify_token');
+  const exp = sessionStorage.getItem('spotify_token_exp');
+  if (stored && exp && Date.now() < Number(exp)) {
+    accessToken = stored;
+  }
+}
+
+async function loginSpotify() {
+  const verifier = generateRandom();
+  const challenge = base64urlencode(await sha256(verifier));
+  sessionStorage.setItem('pkce_verifier', verifier);
+  const url = `https://accounts.spotify.com/authorize?` + new URLSearchParams({
+    response_type: 'code',
+    client_id: SPOTIFY_CLIENT_ID,
+    scope: 'user-read-private',
+    redirect_uri: REDIRECT_URI,
+    code_challenge_method: 'S256',
+    code_challenge: challenge
+  });
+  window.location = url;
+}
+
+// ── Spotify Search ────────────────────────────────────────────────────────
+let searchTimeout = null;
+let selectedTrack = null;
+
+const searchInput = document.getElementById('search-input');
+const resultsList = document.getElementById('results');
+const spinner = document.getElementById('spinner');
+
+searchInput.addEventListener('input', () => {
+  clearTimeout(searchTimeout);
+  const q = searchInput.value.trim();
+  if (!q) { resultsList.style.display='none'; resultsList.innerHTML=''; return; }
+  searchTimeout = setTimeout(() => doSearch(q), 380);
+});
+
+async function doSearch(q) {
+  if (!accessToken) {
+    // Try to trigger login on first search
+    if (SPOTIFY_CLIENT_ID !== "YOUR_SPOTIFY_CLIENT_ID") loginSpotify();
+    return;
+  }
+  spinner.style.display = 'block';
+  try {
+    const r = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(q)}&type=track&limit=6`, {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+    if (r.status === 401) { accessToken = null; sessionStorage.removeItem('spotify_token'); loginSpotify(); return; }
+    const data = await r.json();
+    renderResults(data.tracks?.items || []);
+  } catch(e) {
+    console.error(e);
+  } finally {
+    spinner.style.display = 'none';
+  }
+}
+
+function renderResults(tracks) {
+  resultsList.innerHTML = '';
+  if (!tracks.length) {
+    resultsList.style.display = 'none';
+    return;
+  }
+  tracks.forEach(track => {
+    const li = document.createElement('li');
+    const img = track.album.images[2]?.url || track.album.images[0]?.url || '';
+    li.innerHTML = `
+      <img src="${img}" alt="">
+      <div class="result-info">
+        <div class="result-title">${escHtml(track.name)}</div>
+        <div class="result-artist">${escHtml(track.artists.map(a=>a.name).join(', '))} · ${escHtml(track.album.name)}</div>
+      </div>`;
+    li.addEventListener('click', () => selectTrack(track));
+    resultsList.appendChild(li);
+  });
+  resultsList.style.display = 'block';
+}
+
+function selectTrack(track) {
+  selectedTrack = track;
+  resultsList.style.display = 'none';
+  resultsList.innerHTML = '';
+  searchInput.value = '';
+
+  document.getElementById('sel-img').src = track.album.images[1]?.url || track.album.images[0]?.url || '';
+  document.getElementById('sel-title').textContent = track.name;
+  document.getElementById('sel-artist').textContent = track.artists.map(a=>a.name).join(', ');
+  document.getElementById('selected-song').style.display = 'flex';
+}
+
+document.getElementById('clear-song').addEventListener('click', () => {
+  selectedTrack = null;
+  document.getElementById('selected-song').style.display = 'none';
+});
+
+// ── Submit ────────────────────────────────────────────────────────────────
+document.getElementById('submit-btn').addEventListener('click', async () => {
+  if (!selectedTrack) { showToast('Please search and pick a song first 🎵', true); return; }
+  if (SHEET_WEBHOOK_URL === "YOUR_GOOGLE_APPS_SCRIPT_URL") {
+    showToast('⚙️ Webhook URL not configured yet', true); return;
+  }
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
+
+  const payload = {
+    song: selectedTrack.name,
+    artist: selectedTrack.artists.map(a=>a.name).join(', '),
+    album: selectedTrack.album.name,
+    spotify_url: selectedTrack.external_urls.spotify,
+    requested_by: document.getElementById('name-input').value.trim() || 'Anonymous',
+    timestamp: new Date().toLocaleString()
+  };
+
+  try {
+    await fetch(SHEET_WEBHOOK_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    showToast('🎉 Request sent! Get ready to dance!');
+    selectedTrack = null;
+    document.getElementById('selected-song').style.display = 'none';
+    document.getElementById('name-input').value = '';
+  } catch(e) {
+    showToast('Oops, something went wrong 😬', true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🎉 Send Request!';
+  }
+});
+
+// ── Toast ─────────────────────────────────────────────────────────────────
+function showToast(msg, isError=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = isError ? 'error show' : 'show';
+  setTimeout(() => t.className = isError ? 'error' : '', 3500);
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Boot ──────────────────────────────────────────────────────────────────
+initSpotify();
+</script>
+</body>
+</html>
