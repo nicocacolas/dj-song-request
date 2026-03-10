@@ -588,6 +588,7 @@ function selectTrack(track) {
   resultsList.style.display = 'none';
   resultsList.innerHTML = '';
   searchInput.value = '';
+  document.querySelector('.search-wrap').style.display = 'none';
   document.getElementById('sel-img').src = track.artworkUrl100 || '';
   document.getElementById('sel-title').textContent = track.trackName;
   document.getElementById('sel-artist').textContent = track.artistName;
@@ -597,6 +598,7 @@ function selectTrack(track) {
 document.getElementById('clear-song').addEventListener('click', () => {
   selectedTrack = null;
   document.getElementById('selected-song').style.display = 'none';
+  document.querySelector('.search-wrap').style.display = 'block';
 });
 
 // ── Submit ────────────────────────────────────────────────────────────────
