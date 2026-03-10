@@ -623,10 +623,12 @@ document.getElementById('submit-btn').addEventListener('click', async () => {
     document.getElementById('selected-song').style.display = 'none';
     document.querySelector('.search-wrap').style.display = 'block';
     document.getElementById('name-input').value = '';
+    localStorage.setItem('last_request_ts', Date.now());
+    startCooldown();
   } catch(e) {
     showToast('Oops, something went wrong 😬', true);
-  } finally {
     btn.disabled = false;
+  } finally {
     overlay.classList.remove('show');
   }
 });
@@ -644,8 +646,31 @@ function escHtml(s) {
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+// ── Cooldown ──────────────────────────────────────────────────────────────
+const COOLDOWN_MS = 100 * 1000;
+let cooldownTimer = null;
+
+function startCooldown() {
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  cooldownTimer = setInterval(() => {
+    const elapsed = Date.now() - Number(localStorage.getItem('last_request_ts'));
+    const remaining = Math.ceil((COOLDOWN_MS - elapsed) / 1000);
+    if (remaining <= 0) {
+      clearInterval(cooldownTimer);
+      btn.disabled = false;
+      btn.textContent = '🎉 Send Request!';
+    } else {
+      btn.textContent = `⏳ ${remaining}s — go dance & feel the music!`;
+    }
+  }, 500);
+}
+
 // ── Boot ──────────────────────────────────────────────────────────────────
 loadConfig();
+// Resume cooldown if page was refreshed mid-countdown
+const lastTs = Number(localStorage.getItem('last_request_ts'));
+if (lastTs && Date.now() - lastTs < COOLDOWN_MS) startCooldown();
 </script>
 </body>
 </html>
