@@ -12,7 +12,6 @@
     --bg:      #07070f;
     --surface: #0f0f1c;
     --card:    #13131f;
-    --card-h:  #181828;
     --border:  rgba(255,255,255,0.07);
     --text:    #e4e4f2;
     --sub:     #55557a;
@@ -20,6 +19,28 @@
     --green:   #3dffc0;
     --pink:    #ff4d8d;
   }
+
+  html.light {
+    --bg:      #f0f0f0;
+    --surface: #e0e0e0;
+    --card:    #ffffff;
+    --border:  rgba(0,0,0,0.1);
+    --text:    #080810;
+    --sub:     #555570;
+    --accent:  #4b3bcc;
+    --green:   #007a55;
+    --pink:    #cc1a55;
+  }
+  html.light header {
+    background: rgba(240,240,240,0.95);
+    border-bottom-color: rgba(0,0,0,0.1);
+  }
+  html.light .live-badge {
+    background: rgba(0,122,85,.1);
+    border-color: rgba(0,122,85,.3);
+  }
+  html.light .card::before { opacity: .4; }
+  html.light .section-divider { border-color: rgba(0,0,0,0.1); }
 
   body {
     font-family: 'Space Grotesk', sans-serif;
@@ -89,8 +110,6 @@
 
   /* ── Main ── */
   main {
-    max-width: 820px;
-    margin: 0 auto;
     padding: 1.2rem 1.4rem 5rem;
   }
 
@@ -160,49 +179,49 @@
 
   /* Art */
   .card-art {
-    width: 68px; height: 68px;
+    width: 100px; height: 100px;
     border-radius: 10px;
     object-fit: cover;
     flex-shrink: 0;
     background: var(--surface);
   }
   .card-art-placeholder {
-    width: 68px; height: 68px;
+    width: 100px; height: 100px;
     border-radius: 10px;
     background: linear-gradient(135deg, #1b1b2e, #242438);
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.6rem;
+    font-size: 2.2rem;
   }
 
   /* Info */
   .card-info { flex: 1; min-width: 0; }
 
   .card-song {
-    font-size: 1.05rem;
+    font-size: 2rem;
     font-weight: 700;
-    letter-spacing: -.01em;
+    letter-spacing: -.02em;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    line-height: 1.25;
-    margin-bottom: .2rem;
+    line-height: 1.2;
+    margin-bottom: .3rem;
   }
 
   .card-artist {
-    font-size: .87rem;
+    font-size: 1.5rem;
     color: var(--sub);
-    font-weight: 500;
+    font-weight: 600;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    margin-bottom: .22rem;
+    margin-bottom: .25rem;
   }
 
   .card-requester {
-    font-size: .75rem;
+    font-size: 1rem;
     color: rgba(85,85,122,.7);
     font-weight: 500;
   }
@@ -212,6 +231,44 @@
     font-weight: 600;
   }
 
+  /* Card buttons group */
+  .card-actions {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: .4rem;
+    align-items: stretch;
+  }
+
+  /* Preview button */
+  .preview-btn {
+    background: rgba(124,107,255,.08);
+    border: 1px solid rgba(124,107,255,.22);
+    color: var(--accent);
+    border-radius: 10px;
+    padding: .45rem .9rem;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: .78rem;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: .02em;
+    transition: background .15s, transform .1s;
+    white-space: nowrap;
+    text-align: center;
+  }
+  .preview-btn:hover { background: rgba(124,107,255,.18); transform: scale(1.04); }
+  .preview-btn:active { transform: scale(.97); }
+  .preview-btn.playing {
+    background: rgba(124,107,255,.22);
+    border-color: var(--accent);
+    animation: preview-pulse .8s ease-in-out infinite alternate;
+  }
+  @keyframes preview-pulse {
+    from { box-shadow: 0 0 6px rgba(124,107,255,.3); }
+    to   { box-shadow: 0 0 16px rgba(124,107,255,.6); }
+  }
+  .preview-btn.no-preview { opacity: .3; cursor: not-allowed; }
+
   /* Played button */
   .played-btn {
     flex-shrink: 0;
@@ -219,14 +276,15 @@
     border: 1px solid rgba(61,255,192,.18);
     color: var(--green);
     border-radius: 10px;
-    padding: .55rem 1rem;
+    padding: .45rem .9rem;
     font-family: 'Space Grotesk', sans-serif;
-    font-size: .8rem;
+    font-size: .78rem;
     font-weight: 700;
     cursor: pointer;
     letter-spacing: .02em;
     transition: background .15s, transform .1s, box-shadow .15s;
     white-space: nowrap;
+    text-align: center;
   }
   .played-btn:hover {
     background: rgba(61,255,192,.16);
@@ -235,11 +293,13 @@
   }
   .played-btn:active { transform: scale(.97); }
   .played-btn.done {
-    background: rgba(255,255,255,.04);
-    border-color: rgba(255,255,255,.08);
-    color: var(--sub);
-    cursor: default;
-    pointer-events: none;
+    background: rgba(255,107,77,.06);
+    border-color: rgba(255,107,77,.2);
+    color: rgba(255,107,77,.7);
+  }
+  .played-btn.done:hover {
+    background: rgba(255,107,77,.14);
+    box-shadow: none;
   }
 
   /* Divider */
@@ -361,8 +421,10 @@
     <div class="dj-title">🎛️ Song Requests</div>
     <div class="live-badge"><div class="live-dot"></div>Live</div>
   </div>
+  <div id="party-label" style="font-size:1rem;font-weight:700;color:var(--text);letter-spacing:-.01em;opacity:.7;"></div>
   <div class="header-right">
     <span id="update-label">Connecting…</span>
+    <button class="change-btn" id="theme-toggle" onclick="toggleLight()">☀️ Light</button>
     <button class="change-btn" id="change-btn" onclick="openPicker()" style="display:none">Change</button>
   </div>
 </header>
@@ -415,30 +477,63 @@ function parseCSV(text) {
   return rows;
 }
 
-// ── iTunes artwork ────────────────────────────────────────────────────────
-async function fetchArtwork(song, artist) {
+// ── iTunes track info (artwork + preview) ─────────────────────────────────
+async function fetchTrackInfo(song, artist) {
   const q = encodeURIComponent(`${song} ${artist}`);
   try {
     const r = await fetch(`https://itunes.apple.com/search?term=${q}&entity=song&limit=1`);
     const d = await r.json();
-    if (d.results?.[0]?.artworkUrl100) {
-      return d.results[0].artworkUrl100.replace('100x100bb', '300x300bb');
-    }
+    const t = d.results?.[0];
+    if (t) return {
+      artwork:    t.artworkUrl100?.replace('100x100bb', '300x300bb') || null,
+      previewUrl: t.previewUrl || null
+    };
   } catch(e) {}
-  return null;
+  return { artwork: null, previewUrl: null };
+}
+
+// ── Audio preview ─────────────────────────────────────────────────────────
+const audio = new Audio();
+let playingId = null;
+
+function togglePreview(id, url, btn) {
+  if (playingId === id) {
+    audio.pause();
+    audio.currentTime = 0;
+    playingId = null;
+    btn.textContent = '▶ Preview';
+    btn.classList.remove('playing');
+    return;
+  }
+  // Stop previous
+  document.querySelectorAll('.preview-btn.playing').forEach(b => {
+    b.textContent = '▶ Preview';
+    b.classList.remove('playing');
+  });
+  audio.src = url;
+  audio.play();
+  playingId = id;
+  btn.textContent = '■ Stop';
+  btn.classList.add('playing');
+  audio.onended = () => {
+    playingId = null;
+    btn.textContent = '▶ Preview';
+    btn.classList.remove('playing');
+  };
 }
 
 // ── Build card element ────────────────────────────────────────────────────
 function buildCard(req, isNew) {
   const div = document.createElement('div');
-  div.className = 'card' + (isNew ? ' new-card' : '') + (playedIds.has(req.id) ? ' played' : '');
+  const isDone = playedIds.has(req.id);
+  div.className = 'card' + (isNew ? ' new-card' : '') + (isDone ? ' played' : '');
   div.dataset.id = req.id;
 
   const art = req.artwork
     ? `<img class="card-art" src="${req.artwork}" alt="" loading="lazy">`
     : `<div class="card-art-placeholder">🎵</div>`;
 
-  const isDone = playedIds.has(req.id);
+  const hasPreview = !!req.previewUrl;
   div.innerHTML = `
     ${art}
     <div class="card-info">
@@ -446,23 +541,48 @@ function buildCard(req, isNew) {
       <div class="card-artist">${esc(req.artist)}</div>
       <div class="card-requester">Requested by <em>${esc(req.requestedBy || 'Anonymous')}</em></div>
     </div>
-    <button class="played-btn${isDone ? ' done' : ''}" data-id="${req.id}">✓ Played</button>
+    <div class="card-actions">
+      <button class="preview-btn${hasPreview ? '' : ' no-preview'}" data-id="${req.id}">
+        ${hasPreview ? '▶ Preview' : '▶ No preview'}
+      </button>
+      <button class="played-btn${isDone ? ' done' : ''}" data-id="${req.id}">
+        ${isDone ? '↩ Undo' : '✓ Played'}
+      </button>
+    </div>
   `;
+
+  if (hasPreview) {
+    div.querySelector('.preview-btn').addEventListener('click', function() {
+      togglePreview(req.id, req.previewUrl, this);
+    });
+  }
+
   return div;
 }
 
-// ── Mark as played ────────────────────────────────────────────────────────
+// ── Played / Undo ─────────────────────────────────────────────────────────
 document.addEventListener('click', e => {
-  const btn = e.target.closest('.played-btn:not(.done)');
+  const btn = e.target.closest('.played-btn');
   if (!btn) return;
   const id = btn.dataset.id;
-  playedIds.add(id);
-  localStorage.setItem('dj_played_v1', JSON.stringify([...playedIds]));
-
   const card = cardEls[id];
-  if (card) {
+  if (!card) return;
+
+  if (playedIds.has(id)) {
+    // Undo
+    playedIds.delete(id);
+    localStorage.setItem('dj_played_v1', JSON.stringify([...playedIds]));
+    card.classList.remove('played');
+    btn.classList.remove('done');
+    btn.textContent = '✓ Played';
+    document.getElementById('pending-list').prepend(card);
+  } else {
+    // Mark played
+    playedIds.add(id);
+    localStorage.setItem('dj_played_v1', JSON.stringify([...playedIds]));
     card.classList.add('played');
     btn.classList.add('done');
+    btn.textContent = '↩ Undo';
     document.getElementById('played-list').prepend(card);
   }
   updateCounts();
@@ -500,10 +620,10 @@ async function refresh() {
     }
 
     if (newOnes.length) {
-      // Fetch artwork in parallel
       await Promise.all(newOnes.map(async req => {
-        if (!artCache[req.id]) artCache[req.id] = await fetchArtwork(req.song, req.artist);
-        req.artwork = artCache[req.id];
+        if (!artCache[req.id]) artCache[req.id] = await fetchTrackInfo(req.song, req.artist);
+        req.artwork    = artCache[req.id]?.artwork    || null;
+        req.previewUrl = artCache[req.id]?.previewUrl || null;
       }));
 
       const pendingList = document.getElementById('pending-list');
@@ -579,7 +699,8 @@ function selectSheet(name) {
   SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(name)}`;
   document.getElementById('picker-overlay').classList.add('hidden');
   document.getElementById('change-btn').style.display = 'inline-block';
-  document.getElementById('update-label').textContent = `📋 ${name}`;
+  document.getElementById('party-label').textContent = `🎉 ${name}`;
+  document.getElementById('update-label').textContent = 'Connecting…';
   // Reset state for new sheet
   knownIds.clear();
   Object.keys(cardEls).forEach(k => delete cardEls[k]);
@@ -588,6 +709,17 @@ function selectSheet(name) {
   clearInterval(refreshInterval);
   refresh();
   refreshInterval = setInterval(refresh, 5000);
+}
+
+// ── Light / dark toggle ───────────────────────────────────────────────────
+function toggleLight() {
+  const isLight = document.documentElement.classList.toggle('light');
+  localStorage.setItem('dj_display_theme', isLight ? 'light' : 'dark');
+  document.getElementById('theme-toggle').textContent = isLight ? '🌙 Dark' : '☀️ Light';
+}
+if (localStorage.getItem('dj_display_theme') === 'light') {
+  document.documentElement.classList.add('light');
+  document.getElementById('theme-toggle').textContent = '🌙 Dark';
 }
 
 // ── Boot ──────────────────────────────────────────────────────────────────
