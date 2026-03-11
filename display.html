@@ -326,7 +326,7 @@
   #picker-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(7,7,15,0.97);
+    background: rgba(0,0,0,0.7);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -336,12 +336,13 @@
   #picker-overlay.hidden { display: none; }
 
   .picker-box {
-    background: #13131f;
-    border: 1px solid rgba(255,255,255,0.08);
+    background: var(--card);
+    border: 1px solid var(--border);
     border-radius: 20px;
     padding: 2rem 1.8rem;
     width: min(400px, 92vw);
-    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    color: var(--text);
   }
   .picker-title {
     font-size: 1.2rem;
@@ -351,18 +352,18 @@
   }
   .picker-sub {
     font-size: .82rem;
-    color: #55557a;
+    color: var(--sub);
     margin-bottom: 1.4rem;
     font-weight: 500;
   }
   .sheet-list { display: flex; flex-direction: column; gap: .5rem; }
   .sheet-btn {
     width: 100%;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.08);
+    background: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 12px;
     padding: .85rem 1.1rem;
-    color: #e4e4f2;
+    color: var(--text);
     font-family: 'Space Grotesk', sans-serif;
     font-size: .95rem;
     font-weight: 600;
