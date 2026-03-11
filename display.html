@@ -261,11 +261,99 @@
 </head>
 <body>
 
+<style>
+  /* ── Picker overlay ── */
+  #picker-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(7,7,15,0.97);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    backdrop-filter: blur(12px);
+  }
+  #picker-overlay.hidden { display: none; }
+
+  .picker-box {
+    background: #13131f;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    padding: 2rem 1.8rem;
+    width: min(400px, 92vw);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  }
+  .picker-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: .4rem;
+    letter-spacing: -.01em;
+  }
+  .picker-sub {
+    font-size: .82rem;
+    color: #55557a;
+    margin-bottom: 1.4rem;
+    font-weight: 500;
+  }
+  .sheet-list { display: flex; flex-direction: column; gap: .5rem; }
+  .sheet-btn {
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: .85rem 1.1rem;
+    color: #e4e4f2;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: .95rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+    transition: background .15s, border-color .15s;
+  }
+  .sheet-btn:hover {
+    background: rgba(124,107,255,.14);
+    border-color: rgba(124,107,255,.4);
+  }
+  .picker-loading {
+    color: #55557a;
+    font-size: .88rem;
+    font-weight: 500;
+    text-align: center;
+    padding: 1rem 0;
+  }
+  .picker-error { color: #ff4d8d; font-size: .85rem; text-align: center; padding: .5rem 0; }
+  .change-btn {
+    background: none;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    color: #55557a;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: .72rem;
+    font-weight: 600;
+    padding: .25rem .6rem;
+    cursor: pointer;
+    transition: color .15s, border-color .15s;
+    margin-left: .5rem;
+  }
+  .change-btn:hover { color: #e4e4f2; border-color: rgba(255,255,255,0.25); }
+</style>
+
+<!-- Picker overlay -->
+<div id="picker-overlay">
+  <div class="picker-box">
+    <div class="picker-title">🎛️ Select Party</div>
+    <div class="picker-sub">Choose which party's requests to display.</div>
+    <div class="sheet-list" id="sheet-list">
+      <div class="picker-loading">Loading parties…</div>
+    </div>
+    <div class="picker-error" id="picker-error" style="display:none"></div>
+  </div>
+</div>
+
 <script>
-  // ── CONFIG ──────────────────────────────────────────────────────────────
-  // Replace with your sheet URL:
-  // https://docs.google.com/spreadsheets/d/SHEET_ID/gviz/tq?tqx=out:csv&sheet=PARTY_NAME
-  const SHEET_CSV_URL = "YOUR_SHEET_CSV_URL";
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzn_W5lZaeNceZrZFM6ouqxB29JskARYSOc-xxmPiZBYHuHn6HWdrDLWvWVG67Px37_iQ/exec";
+  const SPREADSHEET_ID  = "1hsz89i9dutj4LpV8w5r-fs8whDBE92qlNiRDzLAbHPk";
+  let SHEET_CSV_URL = "";
 </script>
 
 <header>
@@ -273,7 +361,10 @@
     <div class="dj-title">🎛️ Song Requests</div>
     <div class="live-badge"><div class="live-dot"></div>Live</div>
   </div>
-  <div class="header-right" id="update-label">Connecting…</div>
+  <div class="header-right">
+    <span id="update-label">Connecting…</span>
+    <button class="change-btn" id="change-btn" onclick="openPicker()" style="display:none">Change</button>
+  </div>
 </header>
 
 <main>
@@ -452,9 +543,60 @@ function esc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+// ── Picker ────────────────────────────────────────────────────────────────
+let refreshInterval = null;
+
+async function openPicker() {
+  document.getElementById('picker-overlay').classList.remove('hidden');
+  document.getElementById('picker-error').style.display = 'none';
+  document.getElementById('sheet-list').innerHTML = '<div class="picker-loading">Loading parties…</div>';
+  try {
+    const r = await fetch(`${APPS_SCRIPT_URL}?action=getSheets`);
+    const sheets = await r.json();
+    if (!sheets.length) {
+      document.getElementById('sheet-list').innerHTML = '';
+      document.getElementById('picker-error').textContent = 'No party sheets found yet. Create one in the admin first.';
+      document.getElementById('picker-error').style.display = 'block';
+      return;
+    }
+    document.getElementById('sheet-list').innerHTML = '';
+    sheets.forEach(name => {
+      const btn = document.createElement('button');
+      btn.className = 'sheet-btn';
+      btn.textContent = '🎉 ' + name;
+      btn.addEventListener('click', () => selectSheet(name));
+      document.getElementById('sheet-list').appendChild(btn);
+    });
+  } catch(e) {
+    document.getElementById('sheet-list').innerHTML = '';
+    document.getElementById('picker-error').textContent = 'Could not load parties. Check your Apps Script URL.';
+    document.getElementById('picker-error').style.display = 'block';
+  }
+}
+
+function selectSheet(name) {
+  localStorage.setItem('dj_display_sheet', name);
+  SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(name)}`;
+  document.getElementById('picker-overlay').classList.add('hidden');
+  document.getElementById('change-btn').style.display = 'inline-block';
+  document.getElementById('update-label').textContent = `📋 ${name}`;
+  // Reset state for new sheet
+  knownIds.clear();
+  Object.keys(cardEls).forEach(k => delete cardEls[k]);
+  document.getElementById('pending-list').innerHTML = '';
+  document.getElementById('played-list').innerHTML = '';
+  clearInterval(refreshInterval);
+  refresh();
+  refreshInterval = setInterval(refresh, 5000);
+}
+
 // ── Boot ──────────────────────────────────────────────────────────────────
-refresh();
-setInterval(refresh, 5000);
+const savedSheet = localStorage.getItem('dj_display_sheet');
+if (savedSheet) {
+  selectSheet(savedSheet);
+} else {
+  openPicker();
+}
 </script>
 </body>
 </html>
