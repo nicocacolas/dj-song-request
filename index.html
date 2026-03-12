@@ -460,19 +460,19 @@
 <header>
   <div class="emoji-row">🎂 🎉 🎶 🎊 🎵</div>
   <h1>Song Request</h1>
-  <p class="subtitle" id="subtitle-text">Pick a song for the DJ!</p>
+  <p class="subtitle" id="subtitle-text">Wünsch dir einen Song für den DJ!</p>
 </header>
 
 <div class="card">
   <div id="config-banner">
-    <strong>⚙️ Setup needed</strong>
-    Open this file and fill in <code>SHEET_WEBHOOK_URL</code> at the top of the &lt;script&gt; block.
+    <strong>⚙️ Einrichtung erforderlich</strong>
+    Öffne diese Datei und trage <code>SHEET_WEBHOOK_URL</code> oben im &lt;script&gt;-Block ein.
   </div>
 
-  <label>🔍 Search for a song</label>
+  <label>🔍 Nach einem Song suchen</label>
   <div class="search-wrap">
     <span class="search-icon">🎵</span>
-    <input type="text" id="search-input" placeholder="Artist or song name…" autocomplete="off" />
+    <input type="text" id="search-input" placeholder="Künstler oder Songname…" autocomplete="off" />
     <div class="spinner" id="spinner"></div>
   </div>
   <ul id="results"></ul>
@@ -483,22 +483,22 @@
       <div class="sel-title" id="sel-title"></div>
       <div class="sel-artist" id="sel-artist"></div>
     </div>
-    <button id="clear-song" title="Clear selection">✕</button>
+    <button id="clear-song" title="Auswahl löschen">✕</button>
   </div>
 
   <div class="name-wrap">
-    <label>👤 Your name <span style="font-weight:400;text-transform:none;font-size:.8rem;color:var(--subtext)">(optional)</span></label>
-    <input type="text" id="name-input" placeholder="e.g. Sarah" maxlength="40" />
+    <label>👤 Dein Name <span style="font-weight:400;text-transform:none;font-size:.8rem;color:var(--subtext)">(optional)</span></label>
+    <input type="text" id="name-input" placeholder="z.B. Sarah" maxlength="40" />
   </div>
 
-  <button id="submit-btn">🎉 Send Request!</button>
+  <button id="submit-btn">🎉 Anfrage senden!</button>
 </div>
 
-<footer>Powered by iTunes · Made with ❤️ for the party</footer>
+<footer>Powered by iTunes · Mit ❤️ für die Party gemacht</footer>
 
 <div id="sending-overlay">
   <div class="vinyl"><div class="vinyl-dot"></div></div>
-  <div class="sending-text">Sending your request…</div>
+  <div class="sending-text">Deine Anfrage wird gesendet…</div>
   <div class="sending-notes">🎵 🎶 🎵</div>
 </div>
 <div id="toast"></div>
@@ -548,11 +548,11 @@ async function loadConfig() {
     const r = await fetch(`${SHEET_WEBHOOK_URL}?action=getConfig`);
     const cfg = await r.json();
     const name = cfg.party_name || 'the Party';
-    document.getElementById('subtitle-text').textContent = `Pick a song for ${name}!`;
+    document.getElementById('subtitle-text').textContent = `Wünsch dir einen Song für ${name}!`;
     document.title = `🎉 ${name} — Song Request`;
     if (cfg.theme) applyTheme(cfg.theme);
   } catch(e) {
-    document.getElementById('subtitle-text').textContent = 'Pick a song for the Party!';
+    document.getElementById('subtitle-text').textContent = 'Wünsch dir einen Song für die Party!';
   }
 }
 
@@ -621,7 +621,7 @@ document.getElementById('clear-song').addEventListener('click', () => {
 
 // ── Submit ────────────────────────────────────────────────────────────────
 document.getElementById('submit-btn').addEventListener('click', async () => {
-  if (!selectedTrack) { showToast('Please search and pick a song first 🎵', true); return; }
+  if (!selectedTrack) { showToast('Bitte suche und wähle zuerst einen Song 🎵', true); return; }
   const btn = document.getElementById('submit-btn');
   const overlay = document.getElementById('sending-overlay');
   btn.disabled = true;
@@ -631,12 +631,12 @@ document.getElementById('submit-btn').addEventListener('click', async () => {
     artist: selectedTrack.artistName,
     album: selectedTrack.collectionName,
     itunes_url: selectedTrack.trackViewUrl,
-    requested_by: document.getElementById('name-input').value.trim() || 'Anonymous',
+    requested_by: document.getElementById('name-input').value.trim() || 'Anonym',
     timestamp: new Date().toLocaleString()
   });
   try {
     await fetch(SHEET_WEBHOOK_URL, { method: 'POST', mode: 'no-cors', body: params });
-    showToast('🎉 Request sent! Get ready to dance!');
+    showToast('🎉 Anfrage gesendet! Mach dich bereit zum Tanzen!');
     selectedTrack = null;
     document.getElementById('selected-song').style.display = 'none';
     document.querySelector('.search-wrap').style.display = 'block';
@@ -644,7 +644,7 @@ document.getElementById('submit-btn').addEventListener('click', async () => {
     localStorage.setItem('last_request_ts', Date.now());
     startCooldown();
   } catch(e) {
-    showToast('Oops, something went wrong 😬', true);
+    showToast('Huch, da ist etwas schiefgelaufen 😬', true);
     btn.disabled = false;
   } finally {
     overlay.classList.remove('show');
@@ -677,9 +677,9 @@ function startCooldown() {
     if (remaining <= 0) {
       clearInterval(cooldownTimer);
       btn.disabled = false;
-      btn.textContent = '🎉 Send Request!';
+      btn.textContent = '🎉 Anfrage senden!';
     } else {
-      btn.textContent = `⏳ ${remaining}s — go dance & feel the music!`;
+      btn.textContent = `⏳ ${remaining}s — tanz und genieß die Musik!`;
     }
   }, 500);
 }

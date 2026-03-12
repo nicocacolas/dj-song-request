@@ -169,26 +169,26 @@
 
 <!-- ── Password gate ── -->
 <div class="panel" id="gate-panel">
-  <div class="panel-title">🔐 Admin Dashboard</div>
+  <div class="panel-title">🔐 Admin-Dashboard</div>
   <div class="field">
-    <label>Password</label>
-    <input type="password" id="pw-input" placeholder="Enter password…" />
+    <label>Passwort</label>
+    <input type="password" id="pw-input" placeholder="Passwort eingeben…" />
   </div>
-  <button class="btn" id="unlock-btn">Unlock</button>
+  <button class="btn" id="unlock-btn">Entsperren</button>
   <div id="gate-error" style="color:#ff4d8d;font-size:.82rem;margin-top:.6rem;min-height:1em;text-align:center;font-weight:700;"></div>
 </div>
 
 <!-- ── Dashboard ── -->
 <div class="panel" id="dashboard" style="display:none">
-  <div class="panel-title">🎛️ Party Settings</div>
+  <div class="panel-title">🎛️ Party-Einstellungen</div>
 
   <div class="field">
-    <label>Party Name</label>
-    <input type="text" id="party-name" placeholder="e.g. Lisa's Birthday" maxlength="50" />
+    <label>Party-Name</label>
+    <input type="text" id="party-name" placeholder="z.B. Lisas Geburtstag" maxlength="50" />
   </div>
 
   <div class="field">
-    <label>Theme</label>
+    <label>Thema</label>
     <div class="theme-grid">
       <div class="theme-card" data-t="party">
         <div class="swatches">
@@ -233,9 +233,9 @@
     </div>
   </div>
 
-  <button class="btn save" id="save-btn">💾 Save Changes</button>
+  <button class="btn save" id="save-btn">💾 Änderungen speichern</button>
   <div id="status"></div>
-  <a href="/" class="back-link">← Back to song request page</a>
+  <a href="/" class="back-link">← Zurück zur Song Request-Seite</a>
 </div>
 
 <script>
@@ -249,7 +249,7 @@ function unlock() {
     document.getElementById('dashboard').style.display = 'block';
     loadCurrentConfig();
   } else {
-    document.getElementById('gate-error').textContent = 'Wrong password.';
+    document.getElementById('gate-error').textContent = 'Falsches Passwort.';
     document.getElementById('pw-input').value = '';
   }
 }
@@ -292,7 +292,7 @@ document.getElementById('save-btn').addEventListener('click', async () => {
   const name = document.getElementById('party-name').value.trim() || 'the Party';
 
   btn.disabled = true;
-  btn.textContent = 'Saving…';
+  btn.textContent = 'Speichern…';
   status.textContent = '';
   status.className = '';
 
@@ -304,13 +304,13 @@ document.getElementById('save-btn').addEventListener('click', async () => {
 
   try {
     await fetch(SHEET_WEBHOOK_URL, { method: 'POST', mode: 'no-cors', body: params });
-    status.textContent = '✓ Saved! Changes will appear on the next page load.';
+    status.textContent = '✓ Gespeichert! Änderungen werden beim nächsten Laden der Seite angezeigt.';
   } catch(e) {
-    status.textContent = 'Something went wrong.';
+    status.textContent = 'Etwas ist schiefgelaufen.';
     status.className = 'error';
   } finally {
     btn.disabled = false;
-    btn.textContent = '💾 Save Changes';
+    btn.textContent = '💾 Änderungen speichern';
   }
 });
 </script>

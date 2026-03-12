@@ -402,10 +402,10 @@
 <!-- Picker overlay -->
 <div id="picker-overlay">
   <div class="picker-box">
-    <div class="picker-title">🎛️ Select Party</div>
-    <div class="picker-sub">Choose which party's requests to display.</div>
+    <div class="picker-title">🎛️ Party auswählen</div>
+    <div class="picker-sub">Wähle aus, welche Party-Anfragen angezeigt werden sollen.</div>
     <div class="sheet-list" id="sheet-list">
-      <div class="picker-loading">Loading parties…</div>
+      <div class="picker-loading">Lade Partys…</div>
     </div>
     <div class="picker-error" id="picker-error" style="display:none"></div>
   </div>
@@ -424,26 +424,26 @@
   </div>
   <div id="party-label" style="font-size:1rem;font-weight:700;color:var(--text);letter-spacing:-.01em;opacity:.7;"></div>
   <div class="header-right">
-    <span id="update-label">Connecting…</span>
-    <button class="change-btn" id="theme-toggle" onclick="toggleLight()">☀️ Light</button>
-    <button class="change-btn" id="change-btn" onclick="openPicker()" style="display:none">Change</button>
+    <span id="update-label">Verbinde…</span>
+    <button class="change-btn" id="theme-toggle" onclick="toggleLight()">☀️ Hell</button>
+    <button class="change-btn" id="change-btn" onclick="openPicker()" style="display:none">Ändern</button>
   </div>
 </header>
 
 <main>
   <div class="section-label">
-    🎵 Pending <span class="badge" id="pending-count">0</span>
+    🎵 Ausstehend <span class="badge" id="pending-count">0</span>
   </div>
   <div id="pending-list"></div>
   <div class="empty" id="empty-state">
     <div class="empty-icon">🎵</div>
-    <div class="empty-text">No requests yet — they'll show up here!</div>
+    <div class="empty-text">Noch keine Anfragen — sie erscheinen hier!</div>
   </div>
 
   <div id="played-section" style="display:none">
     <hr class="section-divider">
     <div class="section-label" style="margin-top:1rem">
-      ✓ Played <span class="badge" id="played-count">0</span>
+      ✓ Gespielt <span class="badge" id="played-count">0</span>
     </div>
     <div id="played-list"></div>
   </div>
@@ -502,13 +502,13 @@ function togglePreview(id, url, btn) {
     audio.pause();
     audio.currentTime = 0;
     playingId = null;
-    btn.textContent = '▶ Preview';
+    btn.textContent = '▶ Vorschau';
     btn.classList.remove('playing');
     return;
   }
   // Stop previous
   document.querySelectorAll('.preview-btn.playing').forEach(b => {
-    b.textContent = '▶ Preview';
+    b.textContent = '▶ Vorschau';
     b.classList.remove('playing');
   });
   audio.src = url;
@@ -518,7 +518,7 @@ function togglePreview(id, url, btn) {
   btn.classList.add('playing');
   audio.onended = () => {
     playingId = null;
-    btn.textContent = '▶ Preview';
+    btn.textContent = '▶ Vorschau';
     btn.classList.remove('playing');
   };
 }
@@ -540,14 +540,14 @@ function buildCard(req, isNew) {
     <div class="card-info">
       <div class="card-song">${esc(req.song)}</div>
       <div class="card-artist">${esc(req.artist)}</div>
-      <div class="card-requester">Requested by <em>${esc(req.requestedBy || 'Anonymous')}</em></div>
+      <div class="card-requester">Angefragt von <em>${esc(req.requestedBy || 'Anonym')}</em></div>
     </div>
     <div class="card-actions">
       <button class="preview-btn${hasPreview ? '' : ' no-preview'}" data-id="${req.id}">
-        ${hasPreview ? '▶ Preview' : '▶ No preview'}
+        ${hasPreview ? '▶ Vorschau' : '▶ Keine Vorschau'}
       </button>
       <button class="played-btn${isDone ? ' done' : ''}" data-id="${req.id}">
-        ${isDone ? '↩ Undo' : '✓ Played'}
+        ${isDone ? '↩ Rückgängig' : '✓ Gespielt'}
       </button>
     </div>
   `;
@@ -575,7 +575,7 @@ document.addEventListener('click', e => {
     localStorage.setItem('dj_played_v1', JSON.stringify([...playedIds]));
     card.classList.remove('played');
     btn.classList.remove('done');
-    btn.textContent = '✓ Played';
+    btn.textContent = '✓ Gespielt';
     document.getElementById('pending-list').prepend(card);
   } else {
     // Mark played
@@ -583,7 +583,7 @@ document.addEventListener('click', e => {
     localStorage.setItem('dj_played_v1', JSON.stringify([...playedIds]));
     card.classList.add('played');
     btn.classList.add('done');
-    btn.textContent = '↩ Undo';
+    btn.textContent = '↩ Rückgängig';
     document.getElementById('played-list').prepend(card);
   }
   updateCounts();
@@ -643,7 +643,7 @@ async function refresh() {
     lastFetch = Date.now();
     startTick();
   } catch(e) {
-    document.getElementById('update-label').textContent = 'Connection error — retrying…';
+    document.getElementById('update-label').textContent = 'Verbindungsfehler — erneuter Versuch…';
     console.error(e);
   }
 }
@@ -655,7 +655,7 @@ function startTick() {
     if (!lastFetch) return;
     const s = Math.round((Date.now() - lastFetch) / 1000);
     document.getElementById('update-label').textContent =
-      s < 5 ? 'Just updated' : `Updated ${s}s ago`;
+      s < 5 ? 'Gerade aktualisiert' : `Vor ${s}s aktualisiert`;
   }, 1000);
 }
 
@@ -670,13 +670,13 @@ let refreshInterval = null;
 async function openPicker() {
   document.getElementById('picker-overlay').classList.remove('hidden');
   document.getElementById('picker-error').style.display = 'none';
-  document.getElementById('sheet-list').innerHTML = '<div class="picker-loading">Loading parties…</div>';
+  document.getElementById('sheet-list').innerHTML = '<div class="picker-loading">Lade Partys…</div>';
   try {
     const r = await fetch(`${APPS_SCRIPT_URL}?action=getSheets`);
     const sheets = await r.json();
     if (!sheets.length) {
       document.getElementById('sheet-list').innerHTML = '';
-      document.getElementById('picker-error').textContent = 'No party sheets found yet. Create one in the admin first.';
+      document.getElementById('picker-error').textContent = 'Noch keine Party-Blätter gefunden. Erstelle zuerst eine im Admin-Bereich.';
       document.getElementById('picker-error').style.display = 'block';
       return;
     }
@@ -690,7 +690,7 @@ async function openPicker() {
     });
   } catch(e) {
     document.getElementById('sheet-list').innerHTML = '';
-    document.getElementById('picker-error').textContent = 'Could not load parties. Check your Apps Script URL.';
+    document.getElementById('picker-error').textContent = 'Partys konnten nicht geladen werden. Überprüfe deine Apps Script URL.';
     document.getElementById('picker-error').style.display = 'block';
   }
 }
@@ -701,7 +701,7 @@ function selectSheet(name) {
   document.getElementById('picker-overlay').classList.add('hidden');
   document.getElementById('change-btn').style.display = 'inline-block';
   document.getElementById('party-label').textContent = `🎉 ${name}`;
-  document.getElementById('update-label').textContent = 'Connecting…';
+  document.getElementById('update-label').textContent = 'Verbinde…';
   // Reset state for new sheet
   knownIds.clear();
   Object.keys(cardEls).forEach(k => delete cardEls[k]);
@@ -716,11 +716,11 @@ function selectSheet(name) {
 function toggleLight() {
   const isLight = document.documentElement.classList.toggle('light');
   localStorage.setItem('dj_display_theme', isLight ? 'light' : 'dark');
-  document.getElementById('theme-toggle').textContent = isLight ? '🌙 Dark' : '☀️ Light';
+  document.getElementById('theme-toggle').textContent = isLight ? '🌙 Dunkel' : '☀️ Hell';
 }
 if (localStorage.getItem('dj_display_theme') === 'light') {
   document.documentElement.classList.add('light');
-  document.getElementById('theme-toggle').textContent = '🌙 Dark';
+  document.getElementById('theme-toggle').textContent = '🌙 Dunkel';
 }
 
 // ── Boot ──────────────────────────────────────────────────────────────────
